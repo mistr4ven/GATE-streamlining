@@ -1,0 +1,132 @@
+#========================================================================================
+# Verbosity            
+#========================================================================================
+
+
+/gate/verbose Physic    1
+/gate/verbose Cuts      1
+/gate/verbose SD        0
+/gate/verbose Actions   0
+/gate/verbose Actor     1
+/gate/verbose Step      0
+/gate/verbose Error     1
+/gate/verbose Warning   1
+/gate/verbose Output    1
+/gate/verbose Beam      1
+/gate/verbose Volume    1
+/gate/verbose Image     1
+/gate/verbose Geometry  2
+
+#========================================================================================
+# Geometry             
+#========================================================================================
+# Material database
+/gate/geometry/setMaterialDatabase data/GateMaterials.db
+# Material database
+# Lut -> 5mm insgesamt
+/gate/world/geometry/setXLength 5500 um
+/gate/world/geometry/setYLength 5500 um
+/gate/world/geometry/setZLength 5500 um
+/gate/world/setMaterial Air
+/gate/world/vis/setVisible 1
+/gate/world/vis/forceWireframe
+
+# Box
+/gate/world/daughters/name  waterbox
+/gate/world/daughters/insert box
+/gate/waterbox/setMaterial Water
+/gate/waterbox/geometry/setXLength 5025 um
+/gate/waterbox/geometry/setYLength 5025 um
+/gate/waterbox/geometry/setZLength 5025 um
+/gate/waterbox/placement/setTranslation 0 0 0 cm
+
+/gate/geometry/rebuild # für vis
+
+
+#========================================================================================
+# PHYSICS              
+#========================================================================================
+# emstandard_opt3 is recommended for medical, space 
+# http://geant4.in2p3.fr/IMG/pdf_PhysicsLists.pdf
+/gate/physics/addPhysicsList emstandard_opt3
+/gate/physics/addProcess Decay
+/gate/physics/addProcess RadioactiveDecay
+
+/gate/physics/Gamma/SetCutInRegion      world 1 mm
+/gate/physics/Electron/SetCutInRegion   world 1 mm
+/gate/physics/Positron/SetCutInRegion   world 1 mm
+
+/gate/physics/Gamma/SetCutInRegion      waterbox 0.001 mm
+/gate/physics/Electron/SetCutInRegion   waterbox 0.001 mm
+/gate/physics/Positron/SetCutInRegion   waterbox 0.001 mm
+
+
+#========================================================================================
+# DOSE ACTOR           
+#========================================================================================
+
+/gate/actor/addActor                     DoseActor  dose3D
+/gate/actor/dose3D/save                  <DOSE_ACTOR>
+/gate/actor/dose3D/attachTo    	       waterbox
+/gate/actor/dose3D/stepHitType           random
+/gate/actor/dose3D/setPosition           0 0 0 cm
+/gate/actor/dose3D/setVoxelSize         25 25 25  um
+/gate/actor/dose3D/setResolution         201 201 201 # Matrixgröße -> TODO change, match with waterbox
+/gate/actor/dose3D/saveEveryNSeconds     86400
+/gate/actor/dose3D/enableEdep            true
+/gate/actor/dose3D/enableUncertaintyEdep true
+/gate/actor/dose3D/enableDose            true
+/gate/actor/dose3D/enableUncertaintyDose true
+/gate/actor/dose3D/enableNumberOfHits    true
+
+/gate/actor/addActor               SimulationStatisticActor stat
+/gate/actor/stat/save              <STAT_ACTOR>
+/gate/actor/stat/saveEveryNSeconds 3600
+
+#========================================================================================
+# INITIALIZE           
+#========================================================================================
+
+/gate/run/initialize
+/gate/physics/displayCuts
+
+#========================================================================================
+# SOURCE               
+#========================================================================================
+
+
+/gate/source/addSource Lu177Source # voxel -> bild
+/gate/source/Lu177Source/gps/particle ion
+/gate/source/Lu177Source/gps/ion 71 177 0 0
+/gate/source/Lu177Source/gps/angtype   iso
+/gate/source/Lu177Source/setForcedUnstableFlag 	true
+/gate/source/Lu177Source/gps/energytype Mono # -> immer Mono und 0 keV. sonst random. denkt an Bestrahlung
+/gate/source/Lu177Source/gps/monoenergy 0. keV
+
+/gate/source/Lu177Source/gps/type Volume
+/gate/source/Lu177Source/gps/shape Sphere 
+/gate/source/Lu177Source/gps/centre 0 0 0 cm
+/gate/source/Lu177Source/gps/radius 15 um
+
+# source is now relative to phantom instead of relative to world
+/gate/source/Lu177Source/attachTo waterbox 
+
+# To enable information output of source 
+/gate/source/Lu177Source/dump 1
+
+# Gives a list of all defined sources. In this example only 1 source
+/gate/source/list
+
+#========================================================================================
+# START
+#========================================================================================
+
+
+/gate/random/setEngineSeed <SEED>
+
+#/tracking/verbose 1
+
+/gate/application/setTotalNumberOfPrimaries <NUMBER_OF_PARTICLES>
+
+/gate/application/start
+

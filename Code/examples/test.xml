@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<NUK-Macro>
+  <global_amount type="metadata" amount="3"/>
+  <branch type="branch">
+    <element type="element" dummy_macro_file="path" seed_file="path or empty" output_location="path"/>
+    <element type="element" split_amount="100" particle_amount="100000000"/>
+    <element type="element" cores="5" ram="70000"/>
+    <element type="element" dim_x="201" dim_y="201" dim_z="201"/>
+    <element type="element" size_x="0.025" size_y="0.025" size_z="0.025"/>
+  </branch>
+</NUK-Macro>
